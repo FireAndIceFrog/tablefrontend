@@ -2,6 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import { useAppDispatch } from '../../app/hooks';
 import { CsvTableActions } from '../CSVTable/CSVTableSlice';
 import { Button, Input } from '@mui/material';
+import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 
 export function UploadButton() {
   const dispatch = useAppDispatch();
@@ -32,7 +33,7 @@ export function UploadButton() {
             onChange={onFileSubmit}
             // onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.value = ""}
         />
-        <Button variant="contained" component="span" >
+        <Button variant="outlined" component="span" startIcon={<FileUploadOutlinedIcon/>}>
             Upload
         </Button>
     </label>

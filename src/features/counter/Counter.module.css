@@ -10,3 +10,10 @@
   top: 0%;
   right: 0%;
 }
+
+.table {
+  position: absolute;
+  top: 10%;
+  left: 0%;
+  width: 100%;
+}

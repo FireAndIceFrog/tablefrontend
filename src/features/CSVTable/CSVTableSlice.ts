@@ -1,13 +1,17 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { UploadData } from '../../Models/UploadData';
 import CSVImportService from '../../services/CSVImportService';
 
 export interface CSVTableState {
-  data: Record<string, string>[];
+  data: UploadData;
   loading: boolean;
 }
 
 const initialState: CSVTableState = {
-  data: [],
+  data: {
+    Headers: [],
+    Rows: [],
+  },
   loading: true
 };
 
@@ -27,7 +31,7 @@ const initData = createAsyncThunk(
 
 const uploadData = createAsyncThunk(
   'CSVTable/uploadData',
-  async (data: Record<string, string>[]) => {
+  async (data: UploadData) => {
     const _response = await CSVImportService.setData(data);
     // The value we return becomes the `fulfilled` action payload
     return;
@@ -38,8 +42,9 @@ const parseCSV = createAsyncThunk(
   'CSVTable/parseCSV',
   async (data: string) => {
     const response = await CSVImportService.readCSVAsync(data);
+    const parsedData = CSVImportService.ConvertCSVToTableData(response);
     // The value we return becomes the `fulfilled` action payload
-    return response;
+    return parsedData;
   }
 );
 
