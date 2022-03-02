@@ -1,9 +1,9 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import counterReducer from '../features/counter/counterSlice';
+import CSVTableSlice from '../features/CSVTable/CSVTableSlice';
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    CSVTable: CSVTableSlice,
   },
 });
 
