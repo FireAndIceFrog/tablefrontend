@@ -17,14 +17,23 @@ export default class CSVImportService {
             const currentline=lines[i].split(",");
         
             for(let j=0;j<headers.length;j++){
-                obj[headers[j]] = currentline[j]
-                    .trim()
-                    .replace("\r", "");
+                try {
+                    obj[headers[j]] = currentline[j]
+                        .trim()
+                        .replace("\r", "");
+                } catch(e) {}
             }
             result.push(obj);
         }
         
         return result
+    }
+
+    public static async ClearAllData() 
+    {
+        await fetch("https://localhost:7127/CSVImport/ClearAllData", {
+            "method": "DELETE",
+        });
     }
 
     public static ConvertCSVToTableData(data: Record<string, string>[]): UploadData {
@@ -59,8 +68,8 @@ export default class CSVImportService {
         } as UploadData;
     }
 
-    public static async getData(): Promise<UploadData> {
-        const data = await fetch("https://localhost:7127/CSVImport/GetWeeklyData", {
+    public static async getData(partNumber?:number ): Promise<UploadData> {
+        const data = await fetch(`https://localhost:7127/CSVImport/GetWeeklyData?partNumber=${partNumber ?? 0}`, {
             "method": "GET",
         });
 
@@ -68,8 +77,19 @@ export default class CSVImportService {
         return jsonData as UploadData;
     }
 
-    public static async setData(data: UploadData) {
+    public static async CountAllData(): Promise<number> {
+        const data = await fetch(`https://localhost:7127/CSVImport/Count`, {
+            "method": "GET",
+        });
 
+        const jsonData = JSON.parse(await data.text());
+        
+        const splitLen = 500
+
+        return Math.floor(jsonData/splitLen);
+    }
+
+    private static async publishChanges(data: UploadData) {
         await axios({
             method: 'post',
             url: 'https://localhost:7127/CSVImport/SetWeeklyData',
@@ -81,5 +101,21 @@ export default class CSVImportService {
                 "Access-Control-Allow-Headers": "Origin, Content-Type, X-Auth-Token, Authorization, Accept,charset,boundary,Content-Length"
             }
         })
+    }
+
+    public static async setData(data: UploadData) {
+        const len = data.Rows.length;
+        const splitLen = 500
+        const tasks: Promise<void>[] = [];
+        for(let i = 0; i < len; i += splitLen) {
+            const subset = data.Rows.slice(i, i + splitLen)
+            const subsetData = {
+                ...data,
+                Rows: subset
+            }
+            tasks.push(CSVImportService.publishChanges(subsetData));
+        }
+
+        await Promise.all(tasks)
     }
 }

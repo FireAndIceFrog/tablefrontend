@@ -1,5 +1,6 @@
 import { Button } from "@mui/material";
 import { GridToolbarContainer, GridToolbarExport } from "@mui/x-data-grid";
+import ClearAllData from "../ClearDataButton";
 import DownloadButton from "../RefreshButton";
 import SaveButton from "../SaveButton";
 import { UploadButton } from "../UploadButton/UploadButton";
@@ -20,6 +21,9 @@ export function CustomToolbar() {
         </div>
         <div style={{marginLeft: buttonMargins}}>
             <DownloadButton/>
+        </div>
+        <div style={{marginLeft: buttonMargins}}>
+          <ClearAllData/>
         </div>
       </GridToolbarContainer>
     );

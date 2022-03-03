@@ -3,6 +3,7 @@ import { useAppDispatch } from '../../app/hooks';
 import { CsvTableActions } from '../CSVTable/CSVTableSlice';
 import { Button, Input } from '@mui/material';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
+import CSVImportService from '../../services/CSVImportService';
 
 export function UploadButton() {
   const dispatch = useAppDispatch();
@@ -12,11 +13,15 @@ export function UploadButton() {
     console.log(file);
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async(e) => {
         const data = e.target?.result;
         if(data)
         {
-          dispatch(CsvTableActions.parseCSV(data as string));
+          
+          const response = await CSVImportService.readCSVAsync(data as string);
+          const parsedData = CSVImportService.ConvertCSVToTableData(response);
+
+          dispatch(CsvTableActions.parseCSV(parsedData));
         }
       };
       reader.readAsText(file);
