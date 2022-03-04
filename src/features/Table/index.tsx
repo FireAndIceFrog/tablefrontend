@@ -42,7 +42,7 @@ export default function CSVTable() {
             paginationMode ={"server"}
             rowCount = {rowCount}
             pageSize = {1}
-            onPageChange={(pageNo, details ) => {setPage(pageNo); dispatch(CsvTableActions.nextPage(pageNo))}}
+            onPageChange={(pageNo, details ) => {setPage(pageNo); dispatch(CsvTableActions.nextPage({index: pageNo, NumPages: rowCount}))}}
           />
       }
       </div>

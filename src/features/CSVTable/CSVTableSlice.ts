@@ -1,49 +1,82 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { RootState } from '../../app/store';
 import { UploadData } from '../../Models/UploadData';
+import UploadModel from '../../Models/UploadModel';
 import CSVImportService from '../../services/CSVImportService';
 
 export interface CSVTableState extends UploadData {
   loading: boolean;
   count: number
+  tableId: string
 }
 
 const initialState: CSVTableState = {
   Headers: [] as UploadData["Headers"],
   Rows: [] as UploadData["Rows"],
   loading: true,
-  count: 0
+  count: 0,
+  tableId: ""
 };
 
-// The function below is called a thunk and allows us to perform async logic. It
-// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
-// will call the thunk with the `dispatch` function as the first argument. Async
-// code can then be executed and other actions can be dispatched. Thunks are
-// typically used to make async requests.
+const GetTableId = createAsyncThunk(
+  'CSVTable/GetTableId',
+  async (_, api) => {
+    const id = await CSVImportService.getTableId();
+    return id;
+  }
+);
+
 const initData = createAsyncThunk(
   'CSVTable/fetchData',
-  async (_, api) => {
-    const response = await CSVImportService.getData();
-    // The value we return becomes the `fulfilled` action payload
-    api.dispatch(countAll());
-    return response;
+  async (_, store) => {
+    const action = await store.dispatch(GetTableId());
+    const headers = await CSVImportService.getHeaders(action.payload as string);
+    const rows = await CSVImportService.getRows(action.payload as string, 0, 100);
+    return {
+      Headers: headers,
+      Rows: rows.data,
+      tableId: action.payload as string,
+      counts: rows.counts
+    };
   }
 );
 
 const nextPage = createAsyncThunk(
   'CSVTable/nextPage',
-  async (pageNumber: number) => {
-    const response = await CSVImportService.getData(pageNumber);
-    // The value we return becomes the `fulfilled` action payload
-    return response;
+  async ({index, NumPages}: {index: number, NumPages: number}, store) => {
+    const tableId = (store.getState() as RootState).CSVTable.tableId;
+    const rows = await CSVImportService.getRows(tableId, index, NumPages);
+    return rows;
+  }
+);
+
+const setHeaders = createAsyncThunk(
+  'CSVTable/setHeaders',
+  async (data: UploadModel[], store) => {
+    const tableId = await CSVImportService.setHeaders(data, { createNewId: true });
+    return tableId;
+  }
+);
+
+const setRows = createAsyncThunk(
+  'CSVTable/setRows',
+  async ({ data, tableId }: {
+    data: Record<string, any>[],
+    tableId?: string
+  }, store) => {
+    if(!tableId){
+      tableId = (store.getState() as RootState).CSVTable.tableId;
+    }
+    const _response = await CSVImportService.setRows(data, tableId);
+    return;
   }
 );
 
 const uploadData = createAsyncThunk(
   'CSVTable/uploadData',
-  async (data: UploadData) => {
-    const _response = await CSVImportService.setData(data);
-    // The value we return becomes the `fulfilled` action payload
-    return;
+  async (data: UploadData, store) => {
+    const action = await store.dispatch(setHeaders(data.Headers))
+    await store.dispatch(setRows({data: data.Rows, tableId: action.payload as string})) 
   }
 );
 
@@ -52,14 +85,6 @@ const parseCSV = createAsyncThunk(
   async (data: UploadData) => {
     // The value we return becomes the `fulfilled` action payload
     return data;
-  }
-);
-
-const countAll = createAsyncThunk(
-  'CSVTable/count',
-  async () => {
-    // The value we return becomes the `fulfilled` action payload
-    return CSVImportService.CountAllData();
   }
 );
 
@@ -80,10 +105,14 @@ export const CSVTableSlice = createSlice({
       .addCase(uploadData.fulfilled, (state, action) => {
         state.loading = false;
       })
+      .addCase(setHeaders.fulfilled, (state, action) => {
+        state.tableId = action.payload;
+      })
       .addCase(initData.fulfilled, (state, action) => {
         state.loading = false;
         state.Headers = action.payload.Headers;
         state.Rows = action.payload.Rows;
+        state.count = action.payload.counts;
       })
       .addCase(initData.rejected, (state) => {
         state.loading = false
@@ -92,11 +121,9 @@ export const CSVTableSlice = createSlice({
         state.Headers = action.payload.Headers;
         state.Rows = action.payload.Rows;
       })
-      .addCase(countAll.fulfilled, (state, action) => {
-        state.count = action.payload;
-      })
       .addCase(nextPage.fulfilled, (state, action) => {
-        state.Rows = action.payload.Rows;
+        state.Rows = action.payload.data;
+        state.count = action.payload.counts;
         state.loading = false
       })
       .addCase(nextPage.rejected, (state) => {
@@ -105,9 +132,11 @@ export const CSVTableSlice = createSlice({
       .addCase(nextPage.pending, (state, action) => {
         state.loading = true
       })
-
+      .addCase(GetTableId.fulfilled, (state, action) => {
+        state.tableId = action.payload;
+      });
   },
 });
 
-export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, countAll, nextPage};
+export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, nextPage};
 export default CSVTableSlice.reducer;
