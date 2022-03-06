@@ -4,6 +4,7 @@ import GetRowsModel from '../Models/GetRowsModel';
 import { TableheaderUpload } from '../Models/TableheaderUpload';
 import { UploadData } from '../Models/UploadData';
 import UploadModel, { TableHeaders } from '../Models/UploadModel';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class CSVImportService {
     public static readCSVAsync = (csv: string, delim = ",") => Promise.resolve(CSVImportService.readCSV(csv, delim))
@@ -65,7 +66,7 @@ export default class CSVImportService {
         return {
             Headers: headers,
             Rows: data.map((x, i) => {
-                x["id"] = `${i}`
+                x["_id"] = `${uuidv4()}`
                 return x;
             })
         } as UploadData;

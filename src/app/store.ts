@@ -1,9 +1,10 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import CSVTableSlice from '../features/CSVTable/CSVTableSlice';
-
+import CSVTableSlice from '../reducers/CSVTable/CSVTableSlice';
+import TableLookupSlice from '../reducers/TableLookupSlice/TableLookupSlice';
 export const store = configureStore({
   reducer: {
     CSVTable: CSVTableSlice,
+    TableLookup: TableLookupSlice
   },
 });
 

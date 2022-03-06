@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { useAppDispatch } from "../../app/hooks";
-import { CsvTableActions } from "../CSVTable/CSVTableSlice";
+import { CsvTableActions } from "../../reducers/CSVTable/CSVTableSlice";
 import CSVImportService from "../../services/CSVImportService";
 
 export default function ClearAllData() 

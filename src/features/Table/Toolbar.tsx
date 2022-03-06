@@ -25,6 +25,7 @@ export function CustomToolbar() {
         <div style={{marginLeft: buttonMargins}}>
           <ClearAllData/>
         </div>
+        
       </GridToolbarContainer>
     );
   }

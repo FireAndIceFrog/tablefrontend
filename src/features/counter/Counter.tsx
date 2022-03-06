@@ -1,7 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import styles from './Counter.module.css';
-import { CsvTableActions } from '../CSVTable/CSVTableSlice';
+import { CsvTableActions } from '../../reducers/CSVTable/CSVTableSlice';
 import CSVTable from '../Table';
 
 export function Counter() {

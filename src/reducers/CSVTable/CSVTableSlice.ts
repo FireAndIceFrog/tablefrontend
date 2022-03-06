@@ -72,6 +72,20 @@ const setRows = createAsyncThunk(
   }
 );
 
+const uploadRows = createAsyncThunk(
+  'CSVTable/uploadRows',
+  async ({ data, tableId }: {
+    data: Record<string, any>[],
+    tableId?: string
+  }, store) => {
+    if(!tableId){
+      tableId = (store.getState() as RootState).CSVTable.tableId;
+    }
+    const _response = await CSVImportService.setRows(data, tableId);
+    return data;
+  }
+);
+
 const uploadData = createAsyncThunk(
   'CSVTable/uploadData',
   async (data: UploadData, store) => {
@@ -108,6 +122,9 @@ export const CSVTableSlice = createSlice({
       .addCase(setHeaders.fulfilled, (state, action) => {
         state.tableId = action.payload;
       })
+      .addCase(uploadRows.fulfilled, (state, action) => {
+        state.Rows = [...state.Rows,...action.payload];
+      })
       .addCase(initData.fulfilled, (state, action) => {
         state.loading = false;
         state.Headers = action.payload.Headers;
@@ -138,5 +155,5 @@ export const CSVTableSlice = createSlice({
   },
 });
 
-export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, nextPage};
+export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, nextPage, uploadRows};
 export default CSVTableSlice.reducer;

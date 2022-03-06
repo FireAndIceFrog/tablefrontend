@@ -1,6 +1,6 @@
 import { Button } from "@mui/material"
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import { CsvTableActions } from "../CSVTable/CSVTableSlice";
+import { CsvTableActions } from "../../reducers/CSVTable/CSVTableSlice";
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
 export default function SaveButton() {

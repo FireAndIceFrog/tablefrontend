@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 import { useAppDispatch } from "../../app/hooks";
-import { CsvTableActions } from "../CSVTable/CSVTableSlice";
+import { CsvTableActions } from "../../reducers/CSVTable/CSVTableSlice";
 import ReplayOutlinedIcon from '@mui/icons-material/ReplayOutlined';
 
 export default function RefreshButton() 

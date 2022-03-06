@@ -4,7 +4,7 @@ import { Skeleton } from '@mui/material';
 import { DataGrid, GridCellParams, GridToolbar } from '@mui/x-data-grid';
 import { useState, useLayoutEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { CsvTableActions } from '../CSVTable/CSVTableSlice';
+import { CsvTableActions } from '../../reducers/CSVTable/CSVTableSlice';
 import { CustomToolbar } from './Toolbar';
 export default function CSVTable() {
     const dispatch = useAppDispatch();
@@ -31,6 +31,7 @@ export default function CSVTable() {
           </>
         :
           <DataGrid
+            getRowId ={(row: any) => row["_id"]}
             classes={{
                 columnHeaders: 'headerCell',
                 virtualScrollerRenderZone: "CSVTableVirtualScrollerRenderZone",
