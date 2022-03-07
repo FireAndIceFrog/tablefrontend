@@ -5,8 +5,12 @@ import { TableheaderUpload } from '../Models/TableheaderUpload';
 import { UploadData } from '../Models/UploadData';
 import UploadModel, { TableHeaders } from '../Models/UploadModel';
 import { v4 as uuidv4 } from 'uuid';
+import FilterModel from '../Models/FilterModel';
+import SorterModel from '../Models/SorterModel';
+import config from "../../config.json";
 
 export default class CSVImportService {
+    public static targetLocation = config["CSVAPIPath"];
     public static readCSVAsync = (csv: string, delim = ",") => Promise.resolve(CSVImportService.readCSV(csv, delim))
     public static readCSV(csv: string, delim = ","): Record<string, string>[] {
         const lines=csv.split("\n");
@@ -35,7 +39,7 @@ export default class CSVImportService {
 
     public static async ClearAllData() 
     {
-        await fetch("https://localhost:7127/CSVImport/ClearAllData", {
+        await fetch(`${this.targetLocation}/CSVImport/ClearAllData`, {
             "method": "DELETE",
         });
     }
@@ -72,19 +76,35 @@ export default class CSVImportService {
         } as UploadData;
     }
 
-    public static async getRows(tableId: string, start: number, numRows: number): Promise<GetRowsModel> {
-        const data = await fetch(`https://localhost:7127/CSVImport/GetRows?${tableId ? `TableId=${tableId}&` : ""}start=${start}&numRows=${numRows}`, {
-            "method": "GET",
-        });
+    public static async getRows(tableId: string, start: number, numRows: number, filters?: FilterModel[], sorter?: SorterModel): Promise<GetRowsModel> {
+        
+        const reqData = {} as any;
+        if(filters)
+            reqData["filters"] = filters;
+        if(sorter)
+            reqData["sorter"] = sorter;
 
-        const jsonData = JSON.parse(await data.text());
+            
+        const response = await axios({
+            method: 'post',
+            url: `${this.targetLocation}/CSVImport/GetRows?${tableId ? `TableId=${tableId}&` : ""}start=${start}&numRows=${numRows}`,
+            data: JSON.stringify(reqData),
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Origin, Content-Type, X-Auth-Token, Authorization, Accept,charset,boundary,Content-Length"
+            }
+        })
+
+        const jsonData = response.data;
         return jsonData as GetRowsModel;
     }
 
     private static async publishRows(data: Record<string, any>[], tableId: string) {
         await axios({
             method: 'post',
-            url: `https://localhost:7127/CSVImport/SetRows?TableId=${tableId}`,
+            url: `${this.targetLocation}/CSVImport/SetRows?TableId=${tableId}`,
             data: JSON.stringify(data),
             headers: {
                 "Content-Type": "application/json",
@@ -108,7 +128,7 @@ export default class CSVImportService {
     }
 
     public static async getHeaders(tableId?: string): Promise<UploadModel[]> {
-        const data = await fetch(`https://localhost:7127/CSVImport/GetHeaders?${tableId ? `TableId=${tableId}` : ""}`, {
+        const data = await fetch(`${this.targetLocation}/CSVImport/GetHeaders?${tableId ? `TableId=${tableId}` : ""}`, {
             "method": "GET",
         });
 
@@ -119,7 +139,7 @@ export default class CSVImportService {
     public static async setHeaders(headers: UploadModel[], { createNewId = true }): Promise<string> {
         const id = await axios({
             method: 'post',
-            url: `https://localhost:7127/CSVImport/SetHeaders?createNewId=${createNewId}`,
+            url: `${this.targetLocation}/CSVImport/SetHeaders?createNewId=${createNewId}`,
             data: JSON.stringify({
                 data: headers
             } as TableheaderUpload),
@@ -134,7 +154,7 @@ export default class CSVImportService {
     }
 
     public static async getTableId(): Promise<string> {
-        const data = await fetch(`https://localhost:7127/CSVImport/GetMostRecentTableId`, {
+        const data = await fetch(`${this.targetLocation}/CSVImport/GetMostRecentTableId`, {
             "method": "GET",
         });
 
