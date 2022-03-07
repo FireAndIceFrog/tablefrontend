@@ -7,7 +7,7 @@ import UploadModel, { TableHeaders } from '../Models/UploadModel';
 import { v4 as uuidv4 } from 'uuid';
 import FilterModel from '../Models/FilterModel';
 import SorterModel from '../Models/SorterModel';
-import config from "../../config.json";
+import config from "../config.json";
 
 export default class CSVImportService {
     public static targetLocation = config["CSVAPIPath"];

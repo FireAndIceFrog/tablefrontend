@@ -1,5 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import FilterModel from '../../Models/FilterModel';
+import SorterModel from '../../Models/SorterModel';
 import { UploadData } from '../../Models/UploadData';
 import UploadModel from '../../Models/UploadModel';
 import CSVImportService from '../../services/CSVImportService';
@@ -8,6 +10,10 @@ export interface CSVTableState extends UploadData {
   loading: boolean;
   count: number
   tableId: string
+  filters?: FilterModel[],
+  sorter?: SorterModel,
+  index: number,
+  numPages: number,
 }
 
 const initialState: CSVTableState = {
@@ -15,7 +21,9 @@ const initialState: CSVTableState = {
   Rows: [] as UploadData["Rows"],
   loading: true,
   count: 0,
-  tableId: ""
+  tableId: "",
+  index: 0,
+  numPages: 100
 };
 
 const GetTableId = createAsyncThunk(
@@ -41,11 +49,46 @@ const initData = createAsyncThunk(
   }
 );
 
-const nextPage = createAsyncThunk(
-  'CSVTable/nextPage',
-  async ({index, NumPages}: {index: number, NumPages: number}, store) => {
+const setFilters = createAsyncThunk(
+  'CSVTable/setFilter',
+  async (filters: FilterModel[], store) => {
+    const index = (store.getState() as RootState).CSVTable.index;
+    const NumPages = (store.getState() as RootState).CSVTable.numPages;
+    const sorter = (store.getState() as RootState).CSVTable.sorter;
+    const action = await store.dispatch(getRows({
+      index,
+      NumPages,
+      sorter,
+      filters,
+    }));
+    return filters;
+  }
+);
+
+const setSorter = createAsyncThunk(
+  'CSVTable/setSorter',
+  async (sorter: SorterModel, store) => {
+    const index = (store.getState() as RootState).CSVTable.index;
+    const NumPages = (store.getState() as RootState).CSVTable.numPages;
+    const filters = (store.getState() as RootState).CSVTable.filters;
+    const action = await store.dispatch(getRows({
+      index,
+      NumPages,
+      sorter,
+      filters,
+    }));
+    return sorter;
+  }
+);
+
+const getRows = createAsyncThunk(
+  'CSVTable/getRows',
+  async ({index, NumPages, filters, sorter}: {index: number, NumPages: number, filters?: FilterModel[], sorter?: SorterModel}, store) => {
     const tableId = (store.getState() as RootState).CSVTable.tableId;
-    const rows = await CSVImportService.getRows(tableId, index, NumPages);
+    if(!filters) filters = (store.getState() as RootState).CSVTable.filters;
+    if(!sorter) sorter = (store.getState() as RootState).CSVTable.sorter;
+
+    const rows = await CSVImportService.getRows(tableId, index, NumPages, filters, sorter);
     return rows;
   }
 );
@@ -138,22 +181,30 @@ export const CSVTableSlice = createSlice({
         state.Headers = action.payload.Headers;
         state.Rows = action.payload.Rows;
       })
-      .addCase(nextPage.fulfilled, (state, action) => {
+      .addCase(getRows.fulfilled, (state, action) => {
         state.Rows = action.payload.data;
         state.count = action.payload.counts;
         state.loading = false
+        state.index = action.meta.arg.index;
+        state.numPages = action.meta.arg.NumPages;
       })
-      .addCase(nextPage.rejected, (state) => {
+      .addCase(getRows.rejected, (state) => {
         state.loading = false
       })
-      .addCase(nextPage.pending, (state, action) => {
+      .addCase(getRows.pending, (state, action) => {
         state.loading = true
       })
       .addCase(GetTableId.fulfilled, (state, action) => {
         state.tableId = action.payload;
-      });
+      })
+      .addCase(setFilters.fulfilled, (state, action) => {
+        state.filters = action.payload;
+      })
+      .addCase(setSorter.fulfilled, (state, action) => {
+        state.sorter = action.payload;
+      })
   },
 });
 
-export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, nextPage, uploadRows};
+export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, getRows, uploadRows};
 export default CSVTableSlice.reducer;
