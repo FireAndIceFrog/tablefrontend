@@ -9,6 +9,7 @@ import { createTheme } from '@mui/material';
 import { useMemo } from 'react';
 import { Resizable } from 're-resizable';
 import { Direction, width } from '@mui/system';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const styles = (theme: any) => ({
   flexContainer: {
@@ -44,7 +45,7 @@ const styles = (theme: any) => ({
   },
   noClick: {
     cursor: 'initial',
-  },
+  }
 });
 
 
@@ -92,9 +93,29 @@ function headerRenderer(this: any, { label, columnIndex, width, height, onResize
           width,
           height
         }}
-        onResize={(...args) => {onResize(columnIndex, ...args)}}
+        onResize={(...args: any[]) => {onResize(width, columnIndex, ...args)}}
+        enable = {{
+          top: false,
+          right: true,
+          bottom: false,
+          left: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false
+      }}
+      
       >
         <span className={classes.GridHeaderCell}>{label}</span>
+        <svg style={{
+          width:"24px", 
+          height:"100%",
+          right: "-10px",
+          top: "0px",
+          position: 'absolute'
+        }} viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" />
+      </svg>
     </Resizable>
       </TableCell>
   );

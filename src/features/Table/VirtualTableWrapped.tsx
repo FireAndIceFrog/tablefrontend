@@ -19,8 +19,11 @@ export default function VirtualTableWrapped() {
 
     const [page, setPage] = useState(0);
     
-    const onResize = (index: number, event: MouseEvent | TouchEvent, direction: Direction, elementRef: HTMLElement, delta: any) => {
-          console.log(`onResize: ${direction} ${delta.width}; indes ${index}`)          
+    const onResize = (width:number, index: number, event: MouseEvent | TouchEvent, direction: Direction, elementRef: HTMLElement, delta: any) => {
+          console.log(`onResize: ${direction} ${delta.width}; indes ${index}`)   
+          const updateHeader = {...Headers[index]};
+          updateHeader.width = width+delta.width
+          dispatch(CsvTableActions.updateHeader({Header: updateHeader, index}))
     }
 
     return (

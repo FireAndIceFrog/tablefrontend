@@ -1,4 +1,5 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { PlaylistAddOutlined } from '@material-ui/icons';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import FilterModel from '../../Models/FilterModel';
 import SorterModel from '../../Models/SorterModel';
@@ -152,6 +153,9 @@ export const CSVTableSlice = createSlice({
     resetdata: (state) => {
       state.Headers = initialState.Headers;
       state.Rows = initialState.Rows;
+    },
+    updateHeader: (state, action: PayloadAction<{Header: UploadData["Headers"][0], index: number}>) => {
+      state.Headers[action.payload.index] = action.payload.Header;
     }
   },
   extraReducers: (builder) => {
