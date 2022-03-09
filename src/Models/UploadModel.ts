@@ -8,6 +8,8 @@ export default interface UploadModel  {
     type?: GridNativeColTypes,
     minWidth?: GridColDef["minWidth"]
     flex?: GridColDef["flex"]
+    dataKey: string
+    label: string
 }
 
 export type TableHeaders = UploadModel[]

@@ -48,7 +48,7 @@ export default class CSVImportService {
         const headers: TableHeaders = [];
         if(data.length === 0) 
             throw new Error("No data to convert");
-
+        
         for (const dataKey in data[0]) {
             const key = data[0][dataKey];
             let dataType: GridNativeColTypes = !isNaN(+key) ? "number" : 
@@ -61,8 +61,9 @@ export default class CSVImportService {
                 field: dataKey,
                 headerName: dataKey,
                 type: dataType,
-                minWidth: 120,
-                flex: 50
+                flex: 50,
+                dataKey: dataKey,
+                label: dataKey
                 // width: 80
             })
         }
