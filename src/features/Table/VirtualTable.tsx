@@ -93,7 +93,7 @@ function headerRenderer(this: any, { label, columnIndex, width, height, onResize
           width,
           height
         }}
-        onResize={(...args: any[]) => {onResize(width, columnIndex, ...args)}}
+        onResizeStop={(...args: any[]) => {onResize(width, columnIndex, ...args)}}
         enable = {{
           top: false,
           right: true,

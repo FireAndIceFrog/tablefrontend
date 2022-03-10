@@ -50,6 +50,7 @@ export default function VirtualTableWrapped() {
                     marginLeft:"2.5vw"
                 }}>
                         <VirtualTable
+                        size={{width: document?.defaultView?.window?.innerWidth ?? 0 *0.95, height: document?.defaultView?.window.innerHeight ?? 0*0.95}}
                         onResizeHeader = {onResize}
                         rowCount={Rows.length}
                         columns={Headers}
