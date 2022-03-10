@@ -155,7 +155,9 @@ export const CSVTableSlice = createSlice({
       state.Rows = initialState.Rows;
     },
     updateHeader: (state, action: PayloadAction<{Header: UploadData["Headers"][0], index: number}>) => {
+      
       state.Headers[action.payload.index] = action.payload.Header;
+      state.Headers = [...state.Headers]
     }
   },
   extraReducers: (builder) => {

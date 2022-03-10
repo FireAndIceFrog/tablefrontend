@@ -63,8 +63,8 @@ export default class CSVImportService {
                 type: dataType,
                 flex: 50,
                 dataKey: dataKey,
-                label: dataKey
-                // width: 80
+                label: dataKey,
+                width: 80
             })
         }
 

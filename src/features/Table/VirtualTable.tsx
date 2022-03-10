@@ -103,9 +103,7 @@ function headerRenderer(this: any, { label, columnIndex, width, height, onResize
           bottomRight: false,
           bottomLeft: false,
           topLeft: false
-      }}
-      
-      >
+      }}>
         <span className={classes.GridHeaderCell}>{label}</span>
         <svg style={{
           width:"24px", 
@@ -132,36 +130,36 @@ function MuiVirtualizedTable(props: any) {
       headerRenderer: headerRenderer.bind({ props, ...size }),
       cellRenderer: cellRenderer.bind({ props, ...size }),
     }), [props, size]);
+    const tableRef = React.useRef<any>();
     
-
+    React.useLayoutEffect(() => {
+      const width = columns.reduce((acc: number, col: any)=> {acc += col.width; return acc}, 0)
+      if(size.width !== width){
+        setSize((prev) => ({...prev, width}));
+        tableRef.current.Grid.state.needToResetStyleCache = true
+        tableRef.current.Grid.forceUpdate()
+        tableRef.current.forceUpdate()
+      }
+    }, [columns, size.width])
+    
     return (
-      <AutoSizer>
-        {({ height, width }) => {
-          if(size.width !== width || size.height !== height) {
-            setSize({
-              width, height
-            });
-          }
-
-
-          return <Paper elevation={3} style={{width: width}}>
+    <Paper elevation={3} style={{width: size.width}}>
             <Table
-              height={height}
-              width={width}
+              id={`Table_${size.width}`}
+              height={800}
               rowHeight={rowHeight}
               gridStyle={{
                 direction: 'inherit',
               }}
+              ref={tableRef}
+              width={size.width}
               headerHeight={headerHeight}
               className={classes.table}
               {...tableProps}
               rowClassName={$this.getRowClassName}
+              
             >
               {columns.map(({ dataKey, ...other }: any, index: any) => {
-                if(!other.width)
-                {
-                  other.width = width/columns.length;
-                }
                 return (
                   <Column
                     key={dataKey}
@@ -174,6 +172,8 @@ function MuiVirtualizedTable(props: any) {
                         onResize: onResizeHeader
                       })
                     }
+                    flexGrow={4}
+                    flexShrink={0}
                     className={classes.flexContainer}
                     cellRenderer={$this.cellRenderer}
                     dataKey={dataKey}
@@ -184,8 +184,6 @@ function MuiVirtualizedTable(props: any) {
               })}
             </Table>
           </Paper>
-      }}
-      </AutoSizer>
     );
 }
 
