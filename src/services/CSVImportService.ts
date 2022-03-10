@@ -62,7 +62,8 @@ export default class CSVImportService {
                 name: dataKey,
                 type: dataType,
                 resizable: true,
-                width: 80
+                width: 200,
+                sortable: true
             })
         }
 

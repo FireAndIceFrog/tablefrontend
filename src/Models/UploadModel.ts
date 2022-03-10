@@ -7,6 +7,7 @@ export default interface UploadModel  {
     width?: GridColDef["width"],
     type?: GridNativeColTypes,
     resizable: boolean
+    sortable?: boolean
 }
 
 export type TableHeaders = UploadModel[]

@@ -5,6 +5,7 @@ import SorterModel from '../../Models/SorterModel';
 import { UploadData } from '../../Models/UploadData';
 import UploadModel from '../../Models/UploadModel';
 import CSVImportService from '../../services/CSVImportService';
+import { SortColumn } from "react-data-grid";
 
 export interface CSVTableState extends UploadData {
   loading: boolean;
@@ -14,6 +15,7 @@ export interface CSVTableState extends UploadData {
   sorter?: SorterModel,
   index: number,
   numPages: number,
+  sortColumns: SortColumn[],
 }
 
 const initialState: CSVTableState = {
@@ -23,7 +25,8 @@ const initialState: CSVTableState = {
   count: 0,
   tableId: "",
   index: 0,
-  numPages: 100
+  numPages: 100,
+  sortColumns: []
 };
 
 const GetTableId = createAsyncThunk(
@@ -145,6 +148,14 @@ const parseCSV = createAsyncThunk(
   }
 );
 
+const UpdateSortColumns = createAsyncThunk(
+  'CSVTable/updateSortColumns',
+  async (data: SortColumn[]) => {
+    // The value we return becomes the `fulfilled` action payload
+    return data;
+  }
+);
+
 export const CSVTableSlice = createSlice({
   name: 'CSVTable',
   initialState,
@@ -152,10 +163,16 @@ export const CSVTableSlice = createSlice({
     resetdata: (state) => {
       state.Headers = initialState.Headers;
       state.Rows = initialState.Rows;
+    },
+    updateRows: (state, action) => {
+      state.Rows = action.payload
     }
   },
   extraReducers: (builder) => {
     builder
+      .addCase(UpdateSortColumns.pending, (state, action) => {
+        state.sortColumns = action.meta.arg
+      })
       .addCase(initData.pending, (state) => {
         state.loading = true;
       })
@@ -206,5 +223,5 @@ export const CSVTableSlice = createSlice({
   },
 });
 
-export const CsvTableActions = {...CSVTableSlice.actions, initData, uploadData, parseCSV, getRows, uploadRows};
+export const CsvTableActions = {...CSVTableSlice.actions, UpdateSortColumns, initData, uploadData, parseCSV, getRows, uploadRows};
 export default CSVTableSlice.reducer;
