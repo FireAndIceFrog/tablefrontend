@@ -58,12 +58,11 @@ export default class CSVImportService {
                 "string";
 
             headers.push({
-                field: dataKey,
-                headerName: dataKey,
+                key: dataKey,
+                name: dataKey,
                 type: dataType,
-                minWidth: 120,
-                flex: 50
-                // width: 80
+                resizable: true,
+                width: 80
             })
         }
 

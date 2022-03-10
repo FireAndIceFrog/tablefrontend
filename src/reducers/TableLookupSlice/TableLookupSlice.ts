@@ -20,13 +20,13 @@ const initData = createAsyncThunk(
   async (data: UploadData, store) => {
     
       const HeaderMap = (store.getState() as RootState).CSVTable.Headers.reduce((acc, header) => {
-        if(header.headerName) {
-          acc[header.headerName] = "none"
+        if(header.name) {
+          acc[header.name] = "none"
         }
         return acc;
       }, {} as Record<string, string | null>);
 
-      const headerOptions: string[] = data.Headers.map(header => header.headerName).filter(header => !!header) as string[];
+      const headerOptions: string[] = data.Headers.map(header => header.name).filter(header => !!header) as string[];
 
       return {
         HeaderMap,

@@ -5,6 +5,7 @@ import { DataGrid, GridCellParams, GridToolbar } from '@mui/x-data-grid';
 import { useState, useLayoutEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { CsvTableActions } from '../../reducers/CSVTable/CSVTableSlice';
+import DataTable from './DataTable';
 import { CustomToolbar } from './Toolbar';
 export default function CSVTable() {
     const dispatch = useAppDispatch();
@@ -30,21 +31,7 @@ export default function CSVTable() {
             <Skeleton variant="rectangular" height = "10%" width ="98%" style = {{marginLeft: "1%", marginTop: "1%"}}/>
           </>
         :
-          <DataGrid
-            getRowId ={(row: any) => row["_id"]}
-            classes={{
-                columnHeaders: 'headerCell',
-                virtualScrollerRenderZone: "CSVTableVirtualScrollerRenderZone",
-            }}
-            rows={loading ? [] : Rows}
-            columns={Headers}
-            checkboxSelection
-            components={{ Toolbar: CustomToolbar }}
-            paginationMode ={"server"}
-            rowCount = {rowCount}
-            pageSize = {1}
-            onPageChange={(pageNo, details ) => {setPage(pageNo); dispatch(CsvTableActions.getRows({index: pageNo, NumPages: rowCount}))}}
-          />
+          <DataTable/>
       }
       </div>
     );
