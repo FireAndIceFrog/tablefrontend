@@ -12,28 +12,43 @@ import config from "../config.json";
 export default class CSVImportService {
     public static targetLocation = config["CSVAPIPath"];
     public static readCSVAsync = (csv: string, fileName: string, delim = ",") => Promise.resolve(CSVImportService.readCSV(csv, fileName, delim))
-    public static readCSV(csv: string, fileName: string, delim = ","): Record<string, string>[] {
+    public static readCSV(csv: string, fileName: string, delim = ","): { data: Record<string, string>[], types: Record<string, GridNativeColTypes> } {
         const lines=csv.split("\n");
         const result: Array<Record<string, string>> = [];
-        const headers=lines[0].split(",").map(x => x
+        const headers=lines[0].replace(",", ", ").split(",").map(x => x
             .trim()
             .replace("\r", "")
             .replace(" ", ""));
+        headers.push("FileName")
+
+        const types = {} as Record<string, GridNativeColTypes>;
         for(let  i=1;i<lines.length;i++){
             const obj = {} as Record<string, string>;
-            const currentline=lines[i].split(",");
+            const currentline=lines[i].replace(",", ", ").split(",");
         
-            for(let j=0;j<headers.length;j++){
-                try {
+            for(let j=0;j<headers.length-1;j++){
+                try{
+                    obj["FileName"] = fileName.split(".")[0];
+
+                    if(!types[headers[j]])
+                        types[headers[j]] = this.checkType(currentline[j]);
+                    else if(types[headers[j]] !== this.checkType(currentline[j]) && types[headers[j]] !== "string")
+                    {
+                        types[headers[j]] = "string";
+                        console.error(`CSV Import Error: Columns must be of the same type. Mismatch found for ${headers[j]} with value ${currentline[j]} defaulting to string.`);
+                    }
+
                     obj[headers[j]] = currentline[j]
                         .trim()
                         .replace("\r", "");
-                } catch(e) {}
+                } catch(e) {
+                }
+                    
             }
             result.push(obj);
         }
         
-        return result
+        return { data: result, types: types };
     }
 
     public static async ClearAllData() 
@@ -43,23 +58,27 @@ export default class CSVImportService {
         });
     }
 
+    private static checkType(key: string) {
+        let dataType: GridNativeColTypes = !isNaN(+key) ? "number" : 
+                key.toLowerCase() === "true" || key.toLowerCase()  ==="false" ? "boolean" : 
+                (new Date(key)).toString() !== "Invalid Date" && key.indexOf("/") !== -1  ? "date": 
+                (new Date(+key)).toString() !== "Invalid Date"? "dateTime":
+                "string";
+        return dataType;
+    }
+
+    public static ConvertCSVToTableDataAsync = async (data: Record<string, string>[]) => Promise.resolve(CSVImportService.ConvertCSVToTableData(data));
     public static ConvertCSVToTableData(data: Record<string, string>[]): UploadData {
         const headers: TableHeaders = [];
         if(data.length === 0) 
             throw new Error("No data to convert");
 
         for (const dataKey in data[0]) {
-            const key = data[0][dataKey];
-            let dataType: GridNativeColTypes = !isNaN(+key) ? "number" : 
-                key.toLowerCase() === "true" || key.toLowerCase()  ==="false" ? "boolean" : 
-                (new Date(key)).toString() !== "Invalid Date" && key.indexOf("/") !== -1  ? "date": 
-                (new Date(+key)).toString() !== "Invalid Date"? "dateTime":
-                "string";
 
             headers.push({
                 key: dataKey,
                 name: dataKey,
-                type: dataType,
+                type: "string",
                 resizable: true,
                 width: 200,
                 sortable: true

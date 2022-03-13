@@ -18,13 +18,13 @@ export function StringInput({ column }: {column: UploadModel})
   };
 
   return <>
-    <Grid item xs = {2} key="text"> 
+    <Grid item xs = {4} key="text"> 
       <Typography paddingLeft="10%">
-      Col is 
+      Col starts with 
       </Typography>
     </Grid>
     
-    <Grid item xs = {8} key="value"> 
+    <Grid item xs = {7} key="value"> 
       <Input type={column.type} 
         value={filters?.comparator ?? ""}
         onChange={handleValueChange}

@@ -24,6 +24,18 @@ export function FilterMenu({column}: {column: UploadModel}) {
             dispatch(CsvTableActions.UpdateFilterColumns({...filterData}))
         }
     }
+
+    const deleteFilters = () => {
+      if(filterData?.operation && filterData?.key)
+      {
+          dispatch(CsvTableActions.UpdateFilterColumns({...filterData, comparator: undefined} as any));
+          setFilterData({
+            key: column.key,
+            comparator: "",
+            operation: "=="
+          })
+      }
+    }
   
     const handleClick = (event: any) => {
       if(!open)
@@ -68,7 +80,7 @@ export function FilterMenu({column}: {column: UploadModel}) {
           <Grid container>
             <filterContext.Provider value={{setFilters: setFilterData as any, filters: filterData}}>
               <InputSwitch column={column}/>
-              <Grid item xs = {6}> 
+              <Grid item xs = {!filterData?.comparator ? 6 : 4}> 
                   <Button onMouseDown={() =>{
                       handleClose()
                       saveFilters()
@@ -76,7 +88,20 @@ export function FilterMenu({column}: {column: UploadModel}) {
                       Save
                 </Button>
               </Grid>
-              <Grid item xs = {6}> 
+              {
+                !filterData?.comparator ? 
+                  null 
+                  : 
+                  <Grid item xs = {4}> 
+                    <Button onMouseDown={() =>{
+                        handleClose()
+                        deleteFilters()
+                      }}>
+                        Delete
+                  </Button>
+                </Grid>
+              }
+              <Grid item xs = {!filterData?.comparator ? 6 : 4}> 
                   <Button onMouseDown={handleClose}>cancel</Button>
               </Grid>
             </filterContext.Provider>

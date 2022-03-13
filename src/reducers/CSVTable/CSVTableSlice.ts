@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import FilterModel from '../../Models/FilterModel';
 import SorterModel from '../../Models/SorterModel';
@@ -14,7 +14,8 @@ export interface CSVTableState extends UploadData {
   sorter?: SorterModel[],
   index: number,
   numPages: number,
-  filters?: Record<string, FilterModel>
+  filters?: Record<string, FilterModel>,
+  gettingRows: boolean,
 }
 
 const initialState: CSVTableState = {
@@ -25,6 +26,7 @@ const initialState: CSVTableState = {
   tableId: "",
   index: 0,
   numPages: 100,
+  gettingRows: false
 };
 
 const GetTableId = createAsyncThunk(
@@ -53,7 +55,7 @@ const initData = createAsyncThunk(
 const setFilters = createAsyncThunk(
   'CSVTable/setFilter',
   async (filters: FilterModel[], store) => {
-    const index = (store.getState() as RootState).CSVTable.index;
+    const index = 0;
     const NumPages = (store.getState() as RootState).CSVTable.numPages;
     const sorter = (store.getState() as RootState).CSVTable.sorter ?? [];
     const action = await store.dispatch(getRows({
@@ -72,7 +74,7 @@ const setFilters = createAsyncThunk(
 const setSorter = createAsyncThunk(
   'CSVTable/setSorter',
   async (sorters: SorterModel[], store) => {
-    const index = (store.getState() as RootState).CSVTable.index;
+    const index = 0;
     const NumPages = (store.getState() as RootState).CSVTable.numPages;
     const filters = Object.values((store.getState() as RootState).CSVTable.filters ?? {});
     const action = await store.dispatch(getRows({
@@ -87,7 +89,7 @@ const setSorter = createAsyncThunk(
 
 const getRows = createAsyncThunk(
   'CSVTable/getRows',
-  async ({index, NumPages, filters, sorter}: {index: number, NumPages: number, filters?: FilterModel[], sorter?: SorterModel}, store) => {
+  async ({index, NumPages, filters, sorter, addRows}: {index: number, NumPages: number, filters?: FilterModel[], sorter?: SorterModel, addRows?: boolean}, store) => {
     const tableId = (store.getState() as RootState).CSVTable.tableId;
     if(!filters) filters = Object.values((store.getState() as RootState).CSVTable.filters ?? {});
     if(!sorter) sorter = ((store.getState() as RootState).CSVTable.sorter ?? [])[0];
@@ -168,8 +170,14 @@ const UpdateFilterColumns = createAsyncThunk(
   'CSVTable/UpdateFilterColumns',
   async (data: FilterModel, store) => {
     // The value we return becomes the `fulfilled` action payload
-    const filters = (store.getState() as RootState).CSVTable.filters ?? {}
-    filters[data.key] = data
+    const filters = {...(store.getState() as RootState).CSVTable.filters ?? {}}
+    if(data?.comparator) {
+      filters[data.key] = data
+    }
+    else if(!data?.comparator)
+    {
+      delete filters[data.key]
+    }
     store.dispatch(setFilters(Object.values(filters)))
     return data;
   }
@@ -185,6 +193,9 @@ export const CSVTableSlice = createSlice({
     },
     updateRows: (state, action) => {
       state.Rows = action.payload
+    },
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -221,17 +232,24 @@ export const CSVTableSlice = createSlice({
         state.Rows = action.payload.Rows;
       })
       .addCase(getRows.fulfilled, (state, action) => {
-        state.Rows = action.payload.data;
+        state.Rows = Boolean(action.meta.arg.addRows) ? [...state.Rows, ...action.payload.data] : action.payload.data;
         state.count = action.payload.counts;
         state.loading = false
+        
+        state.gettingRows = false
         state.index = action.meta.arg.index;
         state.numPages = action.meta.arg.NumPages;
       })
       .addCase(getRows.rejected, (state) => {
         state.loading = false
+        
+        state.gettingRows = false
       })
       .addCase(getRows.pending, (state, action) => {
-        state.loading = true
+        if (!action.meta.arg.addRows) {
+          state.loading = true
+        }
+        state.gettingRows = true
       })
       .addCase(GetTableId.fulfilled, (state, action) => {
         state.tableId = action.payload;

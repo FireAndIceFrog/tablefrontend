@@ -11,7 +11,8 @@ export function UploadButton() {
   const dispatch = useAppDispatch();
   const fileRef = useRef<HTMLInputElement>(null);
   const headers = useAppSelector(x => x.CSVTable.Headers);
-  const onFileSubmit = useCallback((e) => {
+  const onFileSubmit = useCallback(async (e) => {
+    dispatch(CsvTableActions.setLoading(true));
     const file = fileRef.current?.files?.[0];
     console.log(file);
     if (file) {
@@ -27,9 +28,14 @@ export function UploadButton() {
             Rows: []
           }
           try {
-            parsedData = CSVImportService.ConvertCSVToTableData(response);
+            parsedData = await CSVImportService.ConvertCSVToTableDataAsync(response.data);
           } catch (error) {
           }
+          headers.forEach(header => {
+            header.type = response.types[header.key];
+          })
+          
+          dispatch(CsvTableActions.setLoading(false));
           const action = (!headers || headers.length  === 0) ? 
             CsvTableActions.parseCSV(parsedData) 
             : 
@@ -37,10 +43,11 @@ export function UploadButton() {
           dispatch(action as any);
         }
       };
-      reader.onload = load;
+      reader.onload = (e) => void load(e);
       reader.readAsText(file);
       
     }
+    
   }, [dispatch, headers]);
 
   return (
