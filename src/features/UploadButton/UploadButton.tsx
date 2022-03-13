@@ -31,8 +31,9 @@ export function UploadButton() {
             parsedData = await CSVImportService.ConvertCSVToTableDataAsync(response.data);
           } catch (error) {
           }
-          headers.forEach(header => {
-            header.type = response.types[header.key];
+          parsedData.Headers = parsedData.Headers.map(header => {
+            const newHeader = { ...header, type: response.types[header.key]};
+            return newHeader;
           })
           
           dispatch(CsvTableActions.setLoading(false));
