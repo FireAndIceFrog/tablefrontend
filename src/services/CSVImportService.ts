@@ -11,8 +11,8 @@ import config from "../config.json";
 
 export default class CSVImportService {
     public static targetLocation = config["CSVAPIPath"];
-    public static readCSVAsync = (csv: string, delim = ",") => Promise.resolve(CSVImportService.readCSV(csv, delim))
-    public static readCSV(csv: string, delim = ","): Record<string, string>[] {
+    public static readCSVAsync = (csv: string, fileName: string, delim = ",") => Promise.resolve(CSVImportService.readCSV(csv, fileName, delim))
+    public static readCSV(csv: string, fileName: string, delim = ","): Record<string, string>[] {
         const lines=csv.split("\n");
         const result: Array<Record<string, string>> = [];
         const headers=lines[0].split(",").map(x => x
@@ -20,7 +20,6 @@ export default class CSVImportService {
             .replace("\r", "")
             .replace(" ", ""));
         for(let  i=1;i<lines.length;i++){
-        
             const obj = {} as Record<string, string>;
             const currentline=lines[i].split(",");
         

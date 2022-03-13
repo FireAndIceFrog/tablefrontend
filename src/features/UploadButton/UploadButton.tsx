@@ -20,8 +20,8 @@ export function UploadButton() {
         const data = e.target?.result;
         if(data)
         {
-          
-          const response = await CSVImportService.readCSVAsync(data as string);
+          const fileName = file.name;
+          const response = await CSVImportService.readCSVAsync(data as string, fileName);
           let parsedData: UploadData = {
             Headers: [],
             Rows: []
